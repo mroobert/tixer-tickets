@@ -7,11 +7,12 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/mroobert/tixer-tickets"
 	"golang.org/x/exp/slog"
 )
 
 // Server represents an HTTP server. It is meant to wrap all HTTP functionality
-// used by the application so that dependent packages do not need to reference the "net/http"
+// used by this microservice so that dependent packages do not need to reference the "net/http"
 // package at all. This allows us to isolate all HTTP code to this "http" package.
 type Server struct {
 	router *httprouter.Router
@@ -20,6 +21,10 @@ type Server struct {
 	Addr            string
 	Logger          *slog.Logger
 	ShutdownTimeout time.Duration
+
+	// Services used by the various HTTP routes.
+
+	TicketService tixer.TicketService
 }
 
 func NewServer(options ...func(*Server)) *Server {
@@ -96,6 +101,8 @@ func WithShutdownTimeout(d time.Duration) func(*Server) {
 
 func (s *Server) AttachRoutesV1() {
 	s.router.HandlerFunc(http.MethodGet, "/v1/healthcheck", s.handleHealthCheck)
+
+	s.registerTicketsRoutesV1(s.router)
 
 	s.server.Handler = s.router
 }
