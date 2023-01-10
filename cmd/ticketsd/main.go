@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"cloud.google.com/go/firestore"
+	firebase "firebase.google.com/go/v4"
 	"github.com/mroobert/tixer-tickets/gcfirestore"
 	"github.com/mroobert/tixer-tickets/http"
 	"golang.org/x/exp/slog"
@@ -66,9 +66,12 @@ type Config struct {
 		APIHost         string
 		DebugHost       string
 	}
-	Firestore struct {
-		TicketsCollection string
-		CounterDocID      string
+	Firebase struct {
+		ProjectID string
+		Firestore struct {
+			TicketsCollection string
+			CounterDocID      string
+		}
 	}
 }
 
@@ -97,25 +100,36 @@ func BuildApplication(ctx context.Context) (*Application, error) {
 	flag.DurationVar(&cfg.Web.ReadTimeout, "read-timeout", 5*time.Second, "Read Timeout")
 	flag.DurationVar(&cfg.Web.ShutdownTimeout, "shutdown-timeout", 20*time.Second, "Shutdown Timeout")
 
+	// Firebase
+	flag.StringVar(&cfg.Firebase.ProjectID, "firebase-project-id", "demo-tixer", "Firebase project ID")
+
 	// Firestore
-	flag.StringVar(&cfg.Firestore.TicketsCollection, "storer-tickets-collection", "tickets", "Tickets collection name")
-	flag.StringVar(&cfg.Firestore.CounterDocID, "storer-stats-doc-ID", "--counter--", "Document ID which stores tickets counter")
+	flag.StringVar(&cfg.Firebase.Firestore.TicketsCollection, "storer-tickets-collection", "tickets", "Tickets collection name")
+	flag.StringVar(&cfg.Firebase.Firestore.CounterDocID, "storer-stats-doc-ID", "--counter--", "Document ID which stores tickets counter")
 
 	flag.Parse()
 	app.Config = cfg
 
-	// Instantiate Firestore-backed services.
-	firestoreClient, err := firestore.NewClient(ctx, "demo-tickets")
+	// Instantiate Firebase App.
+	fbApp, err := firebase.NewApp(ctx, &firebase.Config{
+		ProjectID: app.Config.Firebase.ProjectID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	fsClient, err := fbApp.Firestore(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	storer := gcfirestore.NewStorer(
-		firestoreClient,
-		app.Config.Firestore.TicketsCollection,
-		app.Config.Firestore.CounterDocID,
+		fsClient,
+		app.Config.Firebase.Firestore.TicketsCollection,
+		app.Config.Firebase.Firestore.CounterDocID,
 	)
 
+	// Instantiate HTTP Server.
 	app.SetLogger()
 	app.HTTPServer = http.NewServer(
 		http.WithAddr(app.Config.Web.APIHost),
