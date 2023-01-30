@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"time"
 
+	fbauth "firebase.google.com/go/v4/auth"
 	"github.com/julienschmidt/httprouter"
+	"github.com/mroobert/tixer-pkgs/web"
 	"github.com/mroobert/tixer-tickets"
 	"golang.org/x/exp/slog"
 )
@@ -25,6 +27,7 @@ type Server struct {
 	// Services used by the various HTTP routes.
 
 	TicketService tixer.TicketService
+	AuthService   *fbauth.Client
 }
 
 func NewServer(options ...func(*Server)) *Server {
@@ -104,5 +107,6 @@ func (s *Server) AttachRoutesV1() {
 
 	s.registerTicketsRoutesV1(s.router)
 
-	s.server.Handler = s.router
+	authMidd := web.AuthenticateMiddleware(s.Logger, s.AuthService)
+	s.server.Handler = authMidd(s.router)
 }

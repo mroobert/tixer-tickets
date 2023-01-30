@@ -32,7 +32,7 @@ func NewStorer(client *firestore.Client, collection, counterDocID string) *Store
 
 // CreateTicket creates a ticket in Firestore.
 //
-// It uses a transation to ensure atomicity regarding
+// It uses a transaction to ensure atomicity regarding
 // the creation of the ticket and the increment of the totalTickets field.
 func (s *Storer) CreateTicket(ctx context.Context, ticket tixer.Ticket) error {
 	tRef := s.client.Collection(s.collection).Doc(ticket.ID.String())

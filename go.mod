@@ -7,8 +7,8 @@ require (
 	firebase.google.com/go/v4 v4.10.0
 	github.com/google/uuid v1.3.0
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/mroobert/tixer-pkgs v0.0.5
-	golang.org/x/exp v0.0.0-20221230185412-738e83a70c30
+	github.com/mroobert/tixer-pkgs v0.0.7
+	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
 	google.golang.org/grpc v1.51.0
 )
 
