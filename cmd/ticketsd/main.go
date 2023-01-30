@@ -118,7 +118,14 @@ func BuildApplication(ctx context.Context) (*Application, error) {
 		return nil, err
 	}
 
+	// Firestore client.
 	fsClient, err := fbApp.Firestore(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Firebase Auth client.
+	fbAuthClient, err := fbApp.Auth(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -140,6 +147,7 @@ func BuildApplication(ctx context.Context) (*Application, error) {
 		http.WithShutdownTimeout(app.Config.Web.ShutdownTimeout),
 	)
 	app.HTTPServer.TicketService = storer
+	app.HTTPServer.AuthService = fbAuthClient
 	app.HTTPServer.AttachRoutesV1()
 
 	return &app, nil
