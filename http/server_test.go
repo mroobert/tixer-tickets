@@ -11,6 +11,6 @@ func Test_SomeMethod(t *testing.T) {
 
 	got := true
 	if got != want {
-		t.Fatal("Invalid method")
+		t.Fatal("Invalid method test")
 	}
 }
