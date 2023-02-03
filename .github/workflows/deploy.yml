@@ -1,0 +1,39 @@
+# This workflow will deploy the built container image from Artifact Registry to Cloud Run.
+
+name: Deploy to Cloud Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "The version to deploy"
+        required: true
+
+env:
+  SERVICE: tickets
+  REPOSITORY: ticketing-dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: Google Auth
+        id: auth
+        uses: "google-github-actions/auth@v1"
+        with:
+          token_format: "access_token"
+          workload_identity_provider: "${{ secrets.WIF_PROVIDER }}" # e.g. - projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider
+          service_account: "${{ secrets.WIF_SERVICE_ACCOUNT }}" # e.g. - my-service-account@my-project.iam.gserviceaccount.com
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v1
+        with:
+          service: ${{ env.SERVICE }}
+          region: ${{ secrets.SERVICE_REGION }}
+          image: ${{ secrets.GAR_LOCATION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}
+
+      - name: Show Cloud Run URL
+        run: echo ${{ steps.deploy.outputs.url }}
