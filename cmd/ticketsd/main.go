@@ -93,7 +93,7 @@ func BuildApplication(ctx context.Context) (*Application, error) {
 	flag.StringVar(&cfg.Env, "env", "development", "Environment (development|staging|production)")
 
 	// Web
-	flag.StringVar(&cfg.Web.APIHost, "api-host", "0.0.0.0:4040", "API Host")
+	flag.StringVar(&cfg.Web.APIHost, "api-host", "0.0.0.0:8080", "API Host")
 	flag.StringVar(&cfg.Web.DebugHost, "debug-host", "0.0.0.0:3000", "Debug Host")
 	flag.DurationVar(&cfg.Web.IdleTimeout, "idle-timeout", 120*time.Second, "Idle Timeout")
 	flag.DurationVar(&cfg.Web.WriteTimeout, "write-timeout", 10*time.Second, "Write Timeout")
