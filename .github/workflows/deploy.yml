@@ -8,9 +8,6 @@ on:
       version:
         description: "The version to deploy"
         required: true
-  push:
-    branches:
-      - "cd/cloud-run"
 
 env:
   SERVICE: tickets
