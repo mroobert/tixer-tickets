@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -15,12 +16,18 @@ import (
 	"golang.org/x/exp/slog"
 )
 
+var (
+	ErrFirebaseProjectIdNotProvided = errors.New("firebase-project-id not provided")
+	ErrInitFirebaseApp              = errors.New("could not initialize firebase app")
+	ErrInitFireStoreClient          = errors.New("could not initialize firestore client")
+)
+
 func main() {
 	ctx := context.Background()
 
 	app, err := BuildApplication(ctx)
 	if err != nil {
-		fmt.Println("error building application", err)
+		fmt.Println("error building application: ", err)
 		os.Exit(1)
 	}
 
@@ -69,8 +76,8 @@ type Config struct {
 	Firebase struct {
 		ProjectID string
 		Firestore struct {
-			TicketsCollection string
-			CounterDocID      string
+			CollectionName string
+			CounterDocID   string
 		}
 	}
 }
@@ -101,38 +108,33 @@ func BuildApplication(ctx context.Context) (*Application, error) {
 	flag.DurationVar(&cfg.Web.ShutdownTimeout, "shutdown-timeout", 20*time.Second, "Shutdown Timeout")
 
 	// Firebase
-	flag.StringVar(&cfg.Firebase.ProjectID, "firebase-project-id", "demo-tixer", "Firebase project ID")
-
-	// Firestore
-	flag.StringVar(&cfg.Firebase.Firestore.TicketsCollection, "storer-tickets-collection", "tickets", "Tickets collection name")
-	flag.StringVar(&cfg.Firebase.Firestore.CounterDocID, "storer-stats-doc-ID", "--counter--", "Document ID which stores tickets counter")
+	flag.StringVar(&cfg.Firebase.ProjectID, "firebase-project-id", "", "Firebase project ID")
+	flag.StringVar(&cfg.Firebase.Firestore.CollectionName, "firestore-collection-name", "tickets", "Tickets collection name")
+	flag.StringVar(&cfg.Firebase.Firestore.CounterDocID, "firestore-stats-doc-ID", "--counter--", "Document ID which stores tickets counter")
 
 	flag.Parse()
 	app.Config = cfg
 
-	// Instantiate Firebase App.
-	fbApp, err := firebase.NewApp(ctx, &firebase.Config{
+	// Init Store client.
+	if app.Config.Firebase.ProjectID == "" {
+		return nil, ErrFirebaseProjectIdNotProvided
+	}
+
+	fbTicketsApp, err := firebase.NewApp(ctx, &firebase.Config{
 		ProjectID: app.Config.Firebase.ProjectID,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%q: %w", err.Error(), ErrInitFirebaseApp)
 	}
 
-	// Firestore client.
-	fsClient, err := fbApp.Firestore(ctx)
+	storeClient, err := fbTicketsApp.Firestore(ctx)
 	if err != nil {
-		return nil, err
-	}
-
-	// Firebase Auth client.
-	fbAuthClient, err := fbApp.Auth(ctx)
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%q: %w", err.Error(), ErrInitFireStoreClient)
 	}
 
 	storer := gcfirestore.NewStorer(
-		fsClient,
-		app.Config.Firebase.Firestore.TicketsCollection,
+		storeClient,
+		app.Config.Firebase.Firestore.CollectionName,
 		app.Config.Firebase.Firestore.CounterDocID,
 	)
 
@@ -147,7 +149,6 @@ func BuildApplication(ctx context.Context) (*Application, error) {
 		http.WithShutdownTimeout(app.Config.Web.ShutdownTimeout),
 	)
 	app.HTTPServer.TicketService = storer
-	app.HTTPServer.AuthService = fbAuthClient
 	app.HTTPServer.AttachRoutesV1()
 
 	return &app, nil
