@@ -9,10 +9,6 @@ on:
         description: "The version to deploy"
         required: true
 
-env:
-  SERVICE: tickets
-  REPOSITORY: ticketing-dev
-
 jobs:
   deploy:
     permissions:
@@ -25,19 +21,27 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Google Auth
-        id: auth
         uses: "google-github-actions/auth@v1"
         with:
           token_format: "access_token"
           workload_identity_provider: "${{ secrets.WIF_PROVIDER }}" # e.g. - projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider
           service_account: "${{ secrets.WIF_SERVICE_ACCOUNT }}" # e.g. - my-service-account@my-project.iam.gserviceaccount.com
 
+      - name: Replace values in YAML file
+        env:
+          REGION: ${{ secrets.SERVICE_REGION }}
+          SERVICE_ACCOUNT: ${{ secrets.CLOUD_RUN_SERVICE_ACCOUNT }}
+          IMAGE: ${{ secrets.GAR_LOCATION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/ticketing-dev/tickets:${{ github.sha }}
+          PROJECT_ID: ${{ secrets.PROJECT_ID }}
+        run: |
+          sed -i "s/SERVICE_ACCOUNT/$SERVICE_ACCOUNT/g" cloud-run.yml
+          sed -i "s/IMAGE/$IMAGE/g" cloud-run.yml
+          sed -i "s/PROJECT_ID/$PROJECT_ID/g" cloud-run.yml
+
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v1
         with:
-          service: ${{ env.SERVICE }}
-          region: ${{ secrets.SERVICE_REGION }}
-          image: ${{ secrets.GAR_LOCATION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}
+          metadata: ./cloud-run.yml
 
       - name: Show Cloud Run URL
         run: echo ${{ steps.deploy.outputs.url }}

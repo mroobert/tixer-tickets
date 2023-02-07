@@ -97,7 +97,7 @@ func BuildApplication(ctx context.Context) (*Application, error) {
 	)
 	app = Application{}
 
-	flag.StringVar(&cfg.Env, "env", "development", "Environment (development|staging|production)")
+	flag.StringVar(&cfg.Env, "env", "local", "Environment (local|development|staging|production)")
 
 	// Web
 	flag.StringVar(&cfg.Web.APIHost, "api-host", "0.0.0.0:8080", "API Host")
@@ -178,9 +178,9 @@ func (a *Application) Shutdown() error {
 
 func (a *Application) SetLogger() {
 	switch a.Config.Env {
-	case "development":
+	case "local":
 		a.Logger = slog.New(slog.NewTextHandler(os.Stdout))
-	case "staging", "production":
+	case "development", "staging", "production":
 		a.Logger = slog.New(slog.NewJSONHandler(os.Stdout))
 	}
 }
