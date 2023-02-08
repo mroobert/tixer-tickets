@@ -2,8 +2,6 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: tickets
-  labels:
-    cloud.googleapis.com/location: REGION
 spec:
   template:
     spec:
