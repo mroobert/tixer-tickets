@@ -31,7 +31,7 @@ jobs:
         env:
           REGION: ${{ secrets.SERVICE_REGION }}
           SERVICE_ACCOUNT: ${{ secrets.CLOUD_RUN_SERVICE_ACCOUNT }}
-          IMAGE: ${{ secrets.GAR_LOCATION }}-docker.pkg.dev\/${{ secrets.PROJECT_ID }}\/ticketing-dev/tickets:${{ github.sha }}
+          IMAGE: ${{ secrets.GAR_LOCATION }}-docker.pkg.dev\/${{ secrets.PROJECT_ID }}\/ticketing-dev\/tickets:${{ github.sha }}
           PROJECT_ID: ${{ secrets.PROJECT_ID }}
         run: sed -e "s/REGION/$REGION/g" -e "s/SERVICE_ACCOUNT/$SERVICE_ACCOUNT/g" -e "s/IMAGE/$IMAGE/g" -e "s/PROJECT_ID/$PROJECT_ID/g" cloud-run.yml
 
