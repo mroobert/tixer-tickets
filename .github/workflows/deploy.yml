@@ -34,7 +34,7 @@ jobs:
           IMAGE: ${{ secrets.GAR_LOCATION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/ticketing-dev/tickets:${{ github.sha }}
           PROJECT_ID: ${{ secrets.PROJECT_ID }}
         run: |
-          sed -i.bak "s/REGION/$REGION/g" cloud-run.yml
+          sed -i "s/REGION/$REGION/g" cloud-run.yml
 
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v1
