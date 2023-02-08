@@ -33,8 +33,7 @@ jobs:
           SERVICE_ACCOUNT: ${{ secrets.CLOUD_RUN_SERVICE_ACCOUNT }}
           IMAGE: ${{ secrets.GAR_LOCATION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/ticketing-dev/tickets:${{ github.sha }}
           PROJECT_ID: ${{ secrets.PROJECT_ID }}
-        run: |
-          sed -i "s/SERVICE_ACCOUNT/$SERVICE_ACCOUNT/g" cloud-run.yml
+        run: sed -e "s/REGION/$REGION/g" -e "s/SERVICE_ACCOUNT/$SERVICE_ACCOUNT/g" -e "s/IMAGE/$IMAGE/g" -e "s/PROJECT_ID/$PROJECT_ID/g" cloud-run.yml
 
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v1
