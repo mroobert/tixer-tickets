@@ -35,6 +35,7 @@ jobs:
           PROJECT_ID: ${{ secrets.PROJECT_ID }}
         run: |
           sed -i "s/REGION/$REGION/g" cloud-run.yml
+          sed -i "s/SERVICE_ACCOUNT/$SERVICE_ACCOUNT" cloud-run.yml
 
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v1
