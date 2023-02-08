@@ -28,7 +28,7 @@ jobs:
           IMAGE: ${{ secrets.GAR_LOCATION }}-docker.pkg.dev\/${{ secrets.PROJECT_ID }}\/ticketing-dev\/tickets:${{ github.sha }}
           PROJECT_ID: ${{ secrets.PROJECT_ID }}
         run: |
-          sed -e "s/SERVICE_ACCOUNT/$SERVICE_ACCOUNT/g" -e "s/IMAGE/$IMAGE/g" -e "s/PROJECT_ID/$PROJECT_ID/g" cloud-run.yml
+          sed -e "s/SERVICE_ACCOUNT/$SERVICE_ACCOUNT/g" -e "s/IMAGE/$IMAGE/g" -e "s/PROJECT_ID/$PROJECT_ID/g" cloud-run-template.yml > cloud-run.yml
           cat cloud-run.yml
 
       - name: Deploy to Cloud Run
