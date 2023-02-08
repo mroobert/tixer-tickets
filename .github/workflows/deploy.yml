@@ -34,7 +34,7 @@ jobs:
           IMAGE: ${{ secrets.GAR_LOCATION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/ticketing-dev/tickets:${{ github.sha }}
           PROJECT_ID: ${{ secrets.PROJECT_ID }}
         run: |
-          sed -i.bak "s/REGION/test-region/g" cloud-run.yml
+          sed -i.bak "s|REGION|$REGION|g" cloud-run.yml
           sed -i.bak "s/SERVICE_ACCOUNT/$SERVICE_ACCOUNT/g" cloud-run.yml
           sed -i.bak "s/IMAGE/$IMAGE/g" cloud-run.yml
           sed -i.bak "s/PROJECT_ID/$PROJECT_ID/g" cloud-run.yml
