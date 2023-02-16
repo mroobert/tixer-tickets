@@ -4,7 +4,7 @@ on: push
 
 jobs:
   start:
-    name: "Starting..."
+    name: "Start"
     runs-on: ubuntu-latest
     steps:
       - name: Starting
@@ -12,6 +12,7 @@ jobs:
 
   # This job will build and push a Docker image to Google Artifact Registry for DEV environment.
   ci_development:
+    name: "DEV: build & push docker image"
     needs: start
     runs-on: ubuntu-latest
     if: ${{ github.ref != 'refs/heads/main' }}
