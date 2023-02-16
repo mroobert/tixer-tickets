@@ -1,25 +1,27 @@
-# This workflow will build and push a Docker container to Google Artifact Registry.
+name: CI
 
-name: Build Main
-
-on:
-  push:
-    branches: ["main"]
-
-env:
-  PROJECT_ID: ${{ secrets.PROJECT_ID }}
-  GAR_LOCATION: ${{ secrets.GAR_LOCATION }}
-  SERVICE: tickets
-  REPOSITORY: ticketing-dev
+on: push
 
 jobs:
-  build:
+  start:
+    name: "Starting..."
+    runs-on: ubuntu-latest
+    steps:
+      - name: Starting
+        run: echo "Starting CI..."
+
+  # This job will build and push a Docker image to Google Artifact Registry for DEV environment.
+  ci_development:
+    needs: start
+    runs-on: ubuntu-latest
+    if: ${{ github.ref != 'refs/heads/main' }}
+    environment: development
+
     # Add 'id-token' with the intended permissions for workload identity federation
     permissions:
       contents: "read"
       id-token: "write"
 
-    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -50,9 +52,14 @@ jobs:
         with:
           username: "oauth2accesstoken"
           password: "${{ steps.auth.outputs.access_token }}"
-          registry: "${{ secrets.GAR_LOCATION }}-docker.pkg.dev"
+          registry: "${{ secrets.GCP_ARTIFACT_LOCATION }}-docker.pkg.dev"
 
       - name: Build and Push Container
+        env:
+          ARTIFACT_LOCATION: ${{ secrets.GCP_ARTIFACT_LOCATION }}
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          ARTIFACT_REPO: ${{ secrets.GCP_ARTIFACT_REPO }}
+          SERVICE: tickets
         run: |-
-          docker build -t "${{ secrets.GAR_LOCATION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}" ./
-          docker push "${{ secrets.GAR_LOCATION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}"
+          docker build -t "$ARTIFACT_LOCATION-docker.pkg.dev/$PROJECT_ID/$ARTIFACT_REPO/$SERVICE:${{ github.sha }}" ./
+          docker push "$ARTIFACT_LOCATION-docker.pkg.dev/PROJECT_ID/$ARTIFACT_REPO/$SERVICE:${{ github.sha }}"
