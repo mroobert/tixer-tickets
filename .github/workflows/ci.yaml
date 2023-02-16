@@ -62,4 +62,4 @@ jobs:
           SERVICE: tickets
         run: |-
           docker build -t "$ARTIFACT_LOCATION-docker.pkg.dev/$PROJECT_ID/$ARTIFACT_REPO/$SERVICE:${{ github.sha }}" ./
-          docker push "$ARTIFACT_LOCATION-docker.pkg.dev/PROJECT_ID/$ARTIFACT_REPO/$SERVICE:${{ github.sha }}"
+          docker push "$ARTIFACT_LOCATION-docker.pkg.dev/$PROJECT_ID/$ARTIFACT_REPO/$SERVICE:${{ github.sha }}"
